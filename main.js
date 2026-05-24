@@ -12,7 +12,7 @@ scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
 const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 200);
-camera.position.set(0, 2.5, 14);
+camera.position.set(0, 1.8, 14);
 camera.lookAt(0, 1.5, 0);
 /* custom drag vars */
 
@@ -25,7 +25,7 @@ renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const CAM_Y=2.5, CAM_Z=14, CAM_LOOK_Y=1.2, CAM_X_MIN=-14, CAM_X_MAX=14;
+const CAM_Y=1.8, CAM_Z=14, CAM_LOOK_Y=0.5, CAM_X_MIN=-14, CAM_X_MAX=14;
 let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
@@ -758,7 +758,7 @@ function loop() {
     frames = 0; lastT = now;
   }
   controls.update();
-   camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y, 5);
+   camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y, 9);
   tickers.forEach((fn) => fn(t));
   updateOverlays();
   updateMinimap();
