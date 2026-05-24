@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// OrbitControls removed — using custom X-only drag
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { EXHIBITS } from "./data.js";
 
@@ -11,10 +11,10 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
-const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 200);
-const CAM_HOME = new THREE.Vector3(0, 2, 42);
-const TARGET_HOME = new THREE.Vector3(0, 1.2, 0);
-camera.position.copy(CAM_HOME);
+const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 200);
+camera.position.set(0, 2, 22);
+camera.lookAt(0, 1.5, 0);
+/* custom drag vars */
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -25,15 +25,15 @@ renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 6;
-controls.maxDistance = 60;
-controls.minPolarAngle = 0;
-controls.maxPolarAngle = Math.PI * 0.5;
-controls.target.copy(TARGET_HOME);
-
+const CAM_Y=2, CAM_Z=22, CAM_LOOK_Y=1.5, CAM_X_MIN=-14, CAM_X_MAX=14;
+let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
+renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
+renderer.domElement.addEventListener('pointerup',()=>{isDragging=false;});
+renderer.domElement.addEventListener('pointercancel',()=>{isDragging=false;});
+const controls={update:()=>{},target:new THREE.Vector3(0,CAM_LOOK_Y,0)};
+// CAM_HOME/TARGET_HOME stubs for flyTo compatibility
+const CAM_HOME=new THREE.Vector3(0,CAM_Y,CAM_Z);const TARGET_HOME=new THREE.Vector3(0,CAM_LOOK_Y,0);
 /* PBR environment for nicer reflections */
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -758,6 +758,7 @@ function loop() {
     frames = 0; lastT = now;
   }
   controls.update();
+   camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y, 0);
   tickers.forEach((fn) => fn(t));
   updateOverlays();
   updateMinimap();
