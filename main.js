@@ -12,8 +12,8 @@ scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 200);
-const CAM_HOME = new THREE.Vector3(0, 3, 30);
-const TARGET_HOME = new THREE.Vector3(0, 1.0, 0);
+const CAM_HOME = new THREE.Vector3(0, 2, 42);
+const TARGET_HOME = new THREE.Vector3(0, 1.2, 0);
 camera.position.copy(CAM_HOME);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -30,8 +30,8 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.minDistance = 6;
 controls.maxDistance = 60;
-controls.minPolarAngle = Math.PI * 0.12;
-controls.maxPolarAngle = Math.PI * 0.46;
+controls.minPolarAngle = 0;
+controls.maxPolarAngle = Math.PI * 0.5;
 controls.target.copy(TARGET_HOME);
 
 /* PBR environment for nicer reflections */
