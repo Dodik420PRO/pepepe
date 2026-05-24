@@ -632,15 +632,15 @@ function openPanel(key, focus = false) {
 /* ============================================================
    Camera fly-to
 ============================================================ */
-function flyToZone(zoneKey) {
-  const z = ZONES[zoneKey];
-  // Подлёт по диагонали из центра наружу, выше — обзор всей зоны
-  const dirX = Math.sign(z.x) || 0.4;
-  flyTo(
-    new THREE.Vector3(z.x + dirX * 6, 7, z.z + 15),
-    new THREE.Vector3(z.x, 1.4, z.z)
-  );
-}
+function flyToZone(zoneKey) { const z = ZONES[zoneKey]; camXTarget = z.x; }
+  // (old flyToZone body removed)
+    // removed
+    // removed
+    // removed
+      // removed
+      // removed
+    // removed
+// removed
 function focusOnExhibit(key) {
   const w = exhibitWorldPos[key];
   if (!w) return;
