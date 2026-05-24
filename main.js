@@ -529,7 +529,7 @@ for (const [, z] of Object.entries(ZONES)) {
   el.innerHTML = `<div class="num">${parts[0]}</div><div class="name">${parts[1]}</div>`;
   stage.appendChild(el);
   // anchor near the floor, close to models — y small
-  markers.push({ el, pos: new THREE.Vector3(z.x, 0.4, z.z + 1.5) });
+      markers.push({ el, pos: new THREE.Vector3(z.x, 0.4, z.z + 4.5) });
 }
 
 const pins = []; // { el, key, pos:Vector3 }
