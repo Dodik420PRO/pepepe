@@ -11,7 +11,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
-const camera = new THREE.PerspectiveCamera(90, 1, 0.1, 200);
+const camera = new THREE.PerspectiveCamera(90, 1, 1, 100);
 const CAM_HOME = new THREE.Vector3(14, 7, 22);
 const TARGET_HOME = new THREE.Vector3(0, 1.8, 0);
 camera.position.copy(CAM_HOME);
