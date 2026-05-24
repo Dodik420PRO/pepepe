@@ -12,7 +12,7 @@ scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
 const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 200);
-camera.position.set(0, 2, 22);
+camera.position.set(0, 3, 28);
 camera.lookAt(0, 1.5, 0);
 /* custom drag vars */
 
@@ -25,7 +25,7 @@ renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const CAM_Y=0.8, CAM_Z=22, CAM_LOOK_Y=2.0, CAM_X_MIN=-14, CAM_X_MAX=14;
+const CAM_Y=3, CAM_Z=28, CAM_LOOK_Y=1.5, CAM_X_MIN=-14, CAM_X_MAX=14;
 let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
@@ -175,9 +175,9 @@ function pedestal(x, z) {
   });
 
   // -- Q2: Neutral atom lattice (z = +1.4, x offset left)
-  pedestal(cx - 1.5, cz + 1.0);
+      pedestal(cx - 3.0, cz + 1.0);
   const atomG = new THREE.Group();
-  atomG.position.set(cx - 1.5, 1.5, cz + 1.0);
+      atomG.position.set(cx - 3.0, 1.5, cz + 1.0);
   const atoms = [];
   const atomGeo = new THREE.SphereGeometry(0.06, 12, 8);
   for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) {
@@ -191,7 +191,7 @@ function pedestal(x, z) {
   const atomHit = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.3, 0.7), new THREE.MeshBasicMaterial({ visible: false }));
   atomG.add(atomHit);
   registerInteractive(atomHit, "qubit_atom", "Q-02 · Нейтральные атомы",
-    new THREE.Vector3(cx - 1.5, 2.3, cz + 1.0));
+          new THREE.Vector3(cx - 3.0, 2.3, cz + 1.0));
   scene.add(atomG);
   tickers.push((t) => {
     atomG.rotation.y = Math.sin(t * 0.3) * 0.25;
@@ -199,9 +199,9 @@ function pedestal(x, z) {
   });
 
   // -- Q3: Superconducting chip (z = +1.4, x offset right)
-  pedestal(cx + 1.5, cz + 1.0);
+      pedestal(cx + 3.0, cz + 1.0);
   const chipG = new THREE.Group();
-  chipG.position.set(cx + 1.5, 1.45, cz + 1.0);
+      chipG.position.set(cx + 3.0, 1.45, cz + 1.0);
 
   const wafer = new THREE.Mesh(
     new THREE.BoxGeometry(1.0, 0.06, 1.0),
@@ -238,7 +238,7 @@ function pedestal(x, z) {
   const chipHit = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.6, 1.1), new THREE.MeshBasicMaterial({ visible: false }));
   chipG.add(chipHit);
   registerInteractive(chipHit, "qubit_flux", "Q-03 · Сверхпроводник",
-    new THREE.Vector3(cx + 1.5, 2.2, cz + 1.0));
+          new THREE.Vector3(cx + 3.0, 2.2, cz + 1.0));
   scene.add(chipG);
 
   // hover floating particles
