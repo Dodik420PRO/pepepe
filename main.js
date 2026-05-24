@@ -25,7 +25,7 @@ renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const CAM_Y=2, CAM_Z=22, CAM_LOOK_Y=1.5, CAM_X_MIN=-14, CAM_X_MAX=14;
+const CAM_Y=0.8, CAM_Z=22, CAM_LOOK_Y=2.0, CAM_X_MIN=-14, CAM_X_MAX=14;
 let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
