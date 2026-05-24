@@ -12,8 +12,8 @@ scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 200);
-const CAM_HOME = new THREE.Vector3(0, 9, 28);
-const TARGET_HOME = new THREE.Vector3(0, 0.5, 0);
+const CAM_HOME = new THREE.Vector3(0, 3, 30);
+const TARGET_HOME = new THREE.Vector3(0, 1.0, 0);
 camera.position.copy(CAM_HOME);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
