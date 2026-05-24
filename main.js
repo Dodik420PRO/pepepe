@@ -11,9 +11,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
-const camera = new THREE.PerspectiveCamera(90, 1, 1, 100);
-const CAM_HOME = new THREE.Vector3(14, 7, 22);
-const TARGET_HOME = new THREE.Vector3(0, 1.8, 0);
+const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 200);
+const CAM_HOME = new THREE.Vector3(0, 9, 28);
+const TARGET_HOME = new THREE.Vector3(0, 0.5, 0);
 camera.position.copy(CAM_HOME);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -529,7 +529,7 @@ for (const [, z] of Object.entries(ZONES)) {
   el.innerHTML = `<div class="num">${parts[0]}</div><div class="name">${parts[1]}</div>`;
   stage.appendChild(el);
   // anchor near the floor, close to models — y small
-  markers.push({ el, pos: new THREE.Vector3(z.x, 0.4, z.z + 3.2) });
+  markers.push({ el, pos: new THREE.Vector3(z.x, 0.4, z.z + 1.5) });
 }
 
 const pins = []; // { el, key, pos:Vector3 }
