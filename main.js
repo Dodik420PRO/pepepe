@@ -758,7 +758,7 @@ function loop() {
     frames = 0; lastT = now;
   }
   controls.update();
-   camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y,40);
+   camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y,4);
   tickers.forEach((fn) => fn(t));
   updateOverlays();
   updateMinimap();
