@@ -1,4 +1,4 @@
-0, 0.9, 3.5  0, 1.5, 5.0  0, 1.2, 4.5  0, 0.9, 3.5  import * as THREE from "three";
+0, 1.5, 5.0    0, 2.0, 7.0    0, 0.9, 3.5  0, 1.5, 5.0  0, 1.2, 4.5  0, 0.9, 3.5  import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { EXHIBITS } from "./data.js";
 
