@@ -11,9 +11,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f3ef);
 scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
 
-const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 200);
-camera.position.set(0, 8, 26);
-camera.lookAt(0, 1.5, 0);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 200);
+camera.position.set(0, 3, 22);
+camera.lookAt(0, 1, 0);
 /* custom drag vars */
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -25,7 +25,7 @@ renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
-const CAM_Y=8, CAM_Z=26, CAM_LOOK_Y=0, CAM_X_MIN=-14, CAM_X_MAX=14;
+const CAM_Y=3, CAM_Z=22, CAM_LOOK_Y=1, CAM_X_MIN=-14, CAM_X_MAX=14;
 let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
