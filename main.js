@@ -27,8 +27,8 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 /* ====================================================
 CAMERA
 ==================================================== */
-const CAMERA_HOME = new THREE.Vector3(0, 2.2, 5.5); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(0, 2.2, 5.5), target: new THREE.Vector3(0, 1.5, 0) },   biomed:  { pos: new THREE.Vector3(0, 2.2, 5.5), target: new THREE.Vector3(0, 1.5, 0) },   physics: { pos: new THREE.Vector3(0, 2.2, 5.5), target: new THREE.Vector3(0, 1.5, 0) }, };
-const TARGET_HOME = new THREE.Vector3(0, 1.5, 0);
+const CAMERA_HOME = new THREE.Vector3(0, 3.5, 8.0); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(0, 3.5, 8.0), target: new THREE.Vector3(0, 1.5, -1) },   biomed:  { pos: new THREE.Vector3(0, 3.5, 8.0), target: new THREE.Vector3(0, 1.5, -1) },   physics: { pos: new THREE.Vector3(0, 3.5, 8.0), target: new THREE.Vector3(0, 1.5, -1) }, };
+const TARGET_HOME = new THREE.Vector3(0, 1.5, -1);
 
 const cameraRig = {
   currentPos: CAMERA_HOME.clone(),
