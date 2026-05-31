@@ -7,7 +7,7 @@ SCENE
 ==================================================== */
 const stage = document.getElementById("stage");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf4f3ef);
+scene.background = new THREE.Color(0xff0000);
 scene.fog = new THREE.Fog(0xf4f3ef, 18, 42);
 
 const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
