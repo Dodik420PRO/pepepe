@@ -27,7 +27,7 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 /* ====================================================
 CAMERA
 ==================================================== */
-const CAMERA_HOME = new THREE.Vector3(0, 5.8, 9.2);
+const CAMERA_HOME = new THREE.Vector3(0, 5.8, 9.2); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(-0.4, 4.2, 8.8), target: new THREE.Vector3(-0.2, 1.4, -0.5) },   biomed:  { pos: new THREE.Vector3( 0.4, 4.2, 8.8), target: new THREE.Vector3( 0.2, 1.4, -0.5) },   physics: { pos: new THREE.Vector3( 0.0, 4.2, 8.8), target: new THREE.Vector3( 0.0, 1.4, -0.5) }, };
 const TARGET_HOME = new THREE.Vector3(0, 1.5, -0.7);
 
 const cameraRig = {
@@ -913,7 +913,7 @@ function switchRoom(roomId) {
     cameraRig.currentPos.copy(startPos);
     cameraRig.currentTarget.copy(startTarget);
 
-    flyTo(CAMERA_HOME.clone(), TARGET_HOME.clone());
+    const cr = CAM_ROOMS[roomId] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
     stage.classList.remove("room-switching");
   }, 180);
 }
@@ -923,7 +923,7 @@ document.querySelectorAll(".zones button").forEach((btn) => {
 });
 
 document.getElementById("reset-cam").addEventListener("click", () => {
-  flyTo(CAMERA_HOME.clone(), TARGET_HOME.clone());
+  const cr = CAM_ROOMS[roomId] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
   panel.classList.add("hidden");
   currentKey = null;
   pins.forEach((p) => p.el.classList.remove("dim"));
@@ -989,7 +989,7 @@ function updateOverlays() {
 BOOT
 ==================================================== */
 buildRoom("quantum");
-setCameraImmediate(CAMERA_HOME, TARGET_HOME);
+setCameraImmediate(CAM_ROOMS.quantum.pos, CAM_ROOMS.quantum.target);
 
 /* ====================================================
 LOOP
