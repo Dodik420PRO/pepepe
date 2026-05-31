@@ -1,4 +1,4 @@
-0, 1.2, 4.5  0, 0.9, 3.5  import * as THREE from "three";
+0, 0.9, 3.5  0, 1.5, 5.0  0, 1.2, 4.5  0, 0.9, 3.5  import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { EXHIBITS } from "./data.js";
 
@@ -27,7 +27,7 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 /* ====================================================
 CAMERA
 ==================================================== */
-const CAMERA_HOME = new THREE.Vector3(0, 0.9, 3.5);const CAM_ROOMS = {
-  quantum:  { pos: new THREE.Vector3(0, 0.9, 3.5), target: new THREE.Vector3(0, 1.0, 0) }, 
-    biomed:   { pos: new THREE.Vector3(0, 0.9, 3.5), target: new THREE.Vector3(0, 1.0, 0) },
-    physics:  { pos: new THREE.Vector3(0, 0.9, 3.5), target: new THREE.Vector3(0, 1.0, 0) }
+const CAMERA_HOME = new THREE.Vector3(0, 1.5, 5.0);const CAM_ROOMS = { 
+    quantum:  { pos: new THREE.Vector3(0, 1.5, 5.0), target: new THREE.Vector3(0, 1.0, 0) },
+    biomed:   { pos: new THREE.Vector3(0, 1.5, 5.0), target: new THREE.Vector3(0, 1.0, 0) },
+    physics:  { pos: new THREE.Vector3(0, 1.5, 5.0), target: new THREE.Vector3(0, 1.0, 0) },
