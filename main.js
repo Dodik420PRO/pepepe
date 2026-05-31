@@ -27,8 +27,8 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 /* ====================================================
 CAMERA
 ==================================================== */
-const CAMERA_HOME = new THREE.Vector3(0, 5.8, 9.2); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(-0.4, 4.2, 8.8), target: new THREE.Vector3(-0.2, 1.4, -0.5) },   biomed:  { pos: new THREE.Vector3( 0.4, 4.2, 8.8), target: new THREE.Vector3( 0.2, 1.4, -0.5) },   physics: { pos: new THREE.Vector3( 0.0, 4.2, 8.8), target: new THREE.Vector3( 0.0, 1.4, -0.5) }, };
-const TARGET_HOME = new THREE.Vector3(0, 1.5, -0.7);
+const CAMERA_HOME = new THREE.Vector3(0, 2.8, 6.5); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(0, 2.8, 6.5), target: new THREE.Vector3(0, 1.5, 0) },   biomed:  { pos: new THREE.Vector3(0, 2.8, 6.5), target: new THREE.Vector3(0, 1.5, 0) },   physics: { pos: new THREE.Vector3(0, 2.8, 6.5), target: new THREE.Vector3(0, 1.5, 0) }, };
+const TARGET_HOME = new THREE.Vector3(0, 1.5, 0);
 
 const cameraRig = {
   currentPos: CAMERA_HOME.clone(),
@@ -887,7 +887,7 @@ function focusOnExhibit(keyName) {
   const w = exhibitWorldPos[keyName];
   if (!w) return;
 
-  const camPos = new THREE.Vector3(w.x * 0.18, w.y + 1.7, 4.9);
+  const camPos = new THREE.Vector3(w.x * 0.12, w.y + 1.2, 3.8);
   const tgt = new THREE.Vector3(w.x * 0.06, w.y + 0.06, w.z);
 
   flyTo(camPos, tgt);
@@ -913,7 +913,7 @@ function switchRoom(roomId) {
     cameraRig.currentPos.copy(startPos);
     cameraRig.currentTarget.copy(startTarget);
 
-    const cr = CAM_ROOMS[roomId] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
+    const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
     stage.classList.remove("room-switching");
   }, 180);
 }
@@ -923,7 +923,7 @@ document.querySelectorAll(".zones button").forEach((btn) => {
 });
 
 document.getElementById("reset-cam").addEventListener("click", () => {
-  const cr = CAM_ROOMS[roomId] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
+  const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
   panel.classList.add("hidden");
   currentKey = null;
   pins.forEach((p) => p.el.classList.remove("dim"));
