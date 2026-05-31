@@ -7,7 +7,7 @@ SCENE
 ==================================================== */
 const stage = document.getElementById("stage");
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf4f3ef);
+scene.background = null; // Используем CSS background вместо Three.js
 scene.fog = new THREE.Fog(0xf4f3ef, 18, 42);
 
 const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
@@ -27,8 +27,13 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 /* ====================================================
 CAMERA
 ==================================================== */
-const CAMERA_HOME = new THREE.Vector3(0, 2.4, 6.0); const CAM_ROOMS = {   quantum: { pos: new THREE.Vector3(0, 2.4, 6.0), target: new THREE.Vector3(0, 1.5, 0) },   biomed:  { pos: new THREE.Vector3(0, 2.4, 6.0), target: new THREE.Vector3(0, 1.5, 0) },   physics: { pos: new THREE.Vector3(0, 2.4, 6.0), target: new THREE.Vector3(0, 1.5, 0) }, };
-const TARGET_HOME = new THREE.Vector3(0, 1.5, 0);
+const CAMERA_HOME = new THREE.Vector3(0, 1.8, 6.0);
+const CAM_ROOMS = {
+  quantum:  { pos: new THREE.Vector3(0, 1.8, 6.0), target: new THREE.Vector3(0, 1.0, 0) },
+  biomed:   { pos: new THREE.Vector3(0, 1.8, 6.0), target: new THREE.Vector3(0, 1.0, 0) },
+  physics:  { pos: new THREE.Vector3(0, 1.8, 6.0), target: new THREE.Vector3(0, 1.0, 0) },
+};
+const TARGET_HOME = new THREE.Vector3(0, 1.0, 0);
 
 const cameraRig = {
   currentPos: CAMERA_HOME.clone(),
@@ -94,31 +99,17 @@ scene.add(grid);
 ROOMS
 ==================================================== */
 const ROOMS = {
-  quantum: {
-    id: "quantum",
-    color: 0x7dd3fc,
-    exhibits: ["qubit_ion", "qubit_atom", "qubit_flux"]
-  },
-  biomed: {
-    id: "biomed",
-    color: 0x86efac,
-    exhibits: ["bcd180", "elvis", "mrna"]
-  },
-  physics: {
-    id: "physics",
-    color: 0xfca5a5,
-    exhibits: ["skif", "tokamak"]
-  }
+  quantum: { id: "quantum", color: 0x7dd3fc, exhibits: ["qubit_ion", "qubit_atom", "qubit_flux"] },
+  biomed:  { id: "biomed",  color: 0x86efac, exhibits: ["bcd180", "elvis", "mrna"] },
+  physics: { id: "physics", color: 0xfca5a5, exhibits: ["skif", "tokamak"] }
 };
 
 const interactive = [];
 const exhibitWorldPos = {};
 const tickers = [];
 const pins = [];
-
 let roomRoot = new THREE.Group();
 scene.add(roomRoot);
-
 let currentRoom = "quantum";
 let currentKey = null;
 
@@ -131,7 +122,6 @@ function clearRoom() {
   interactive.length = 0;
   tickers.length = 0;
   Object.keys(exhibitWorldPos).forEach((k) => delete exhibitWorldPos[k]);
-
   scene.remove(roomRoot);
   roomRoot = new THREE.Group();
   scene.add(roomRoot);
@@ -141,17 +131,14 @@ function registerInteractive(hitMesh, keyName, label, anchorLocal, parentGroup =
   hitMesh.userData.exhibitKey = keyName;
   hitMesh.userData.label = label;
   interactive.push(hitMesh);
-
   const world = anchorLocal.clone();
   if (parentGroup) parentGroup.updateWorldMatrix(true, false);
   if (parentGroup) parentGroup.localToWorld(world);
-
   exhibitWorldPos[keyName] = world;
 }
 
 function makePedestal(x, z, radius = 0.78) {
   const g = new THREE.Group();
-
   const base = new THREE.Mesh(
     new THREE.CylinderGeometry(radius * 0.92, radius, 0.72, 32),
     new THREE.MeshStandardMaterial({ color: 0xf8f7f3, roughness: 0.45, metalness: 0.04 })
@@ -167,7 +154,6 @@ function makePedestal(x, z, radius = 0.78) {
   );
   ring.position.set(x, 0.02, z);
   g.add(ring);
-
   roomRoot.add(g);
   return g;
 }
@@ -179,7 +165,6 @@ function getSlots(count) {
       { x: 2.7, z: -0.2 }
     ];
   }
-
   return [
     { x: -3.4, z: -0.15 },
     { x: 0.0, z: -1.25 },
@@ -199,12 +184,7 @@ function buildRoomBase(room) {
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(7.8, 8.05, 96),
-    new THREE.MeshBasicMaterial({
-      color: room.color,
-      transparent: true,
-      opacity: 0.45,
-      side: THREE.DoubleSide
-    })
+    new THREE.MeshBasicMaterial({ color: room.color, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
   );
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.02;
@@ -212,11 +192,7 @@ function buildRoomBase(room) {
 
   const backArc = new THREE.Mesh(
     new THREE.TorusGeometry(6.2, 0.06, 12, 72, Math.PI),
-    new THREE.MeshBasicMaterial({
-      color: room.color,
-      transparent: true,
-      opacity: 0.22
-    })
+    new THREE.MeshBasicMaterial({ color: room.color, transparent: true, opacity: 0.22 })
   );
   backArc.rotation.y = Math.PI;
   backArc.position.set(0, 2.5, -3.4);
@@ -228,14 +204,11 @@ EXHIBIT BUILDERS
 ==================================================== */
 function buildQuantum(slot, keyName) {
   makePedestal(slot.x, slot.z);
-
   if (keyName === "qubit_ion") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.48, slot.z);
-
     const ions = [];
     const ionGeo = new THREE.SphereGeometry(0.15, 16, 12);
-
     for (let i = 0; i < 7; i++) {
       const sph = new THREE.Mesh(
         ionGeo,
@@ -252,7 +225,6 @@ function buildQuantum(slot, keyName) {
       g.add(sph);
       ions.push(sph);
     }
-
     for (const dir of [-1, 1]) {
       const rail = new THREE.Mesh(
         new THREE.BoxGeometry(2.35, 0.035, 0.08),
@@ -262,16 +234,13 @@ function buildQuantum(slot, keyName) {
       rail.castShadow = true;
       g.add(rail);
     }
-
     const hit = new THREE.Mesh(
       new THREE.BoxGeometry(2.7, 1.1, 0.9),
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 0.82, 0), g);
-
     tickers.push((t) => {
       ions.forEach((sp, i) => {
         sp.material.emissiveIntensity = 0.7 + Math.sin(t * 2.4 + i * 0.7) * 0.45;
@@ -279,14 +248,11 @@ function buildQuantum(slot, keyName) {
       });
     });
   }
-
   if (keyName === "qubit_atom") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.55, slot.z);
-
     const atoms = [];
     const atomGeo = new THREE.SphereGeometry(0.08, 12, 8);
-
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
         const sph = new THREE.Mesh(
@@ -304,16 +270,13 @@ function buildQuantum(slot, keyName) {
         atoms.push(sph);
       }
     }
-
     const hit = new THREE.Mesh(
       new THREE.BoxGeometry(1.6, 1.6, 0.8),
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 0.9, 0), g);
-
     tickers.push((t) => {
       g.rotation.y = Math.sin(t * 0.45) * 0.28;
       atoms.forEach((a, i) => {
@@ -321,11 +284,9 @@ function buildQuantum(slot, keyName) {
       });
     });
   }
-
   if (keyName === "qubit_flux") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.42, slot.z);
-
     const wafer = new THREE.Mesh(
       new THREE.BoxGeometry(1.25, 0.07, 1.25),
       new THREE.MeshStandardMaterial({ color: 0x12161a, roughness: 0.25, metalness: 0.85 })
@@ -340,7 +301,6 @@ function buildQuantum(slot, keyName) {
       roughness: 0.35,
       metalness: 0.72
     });
-
     function track(x1, z1, x2, z2) {
       const dx = x2 - x1;
       const dz = z2 - z1;
@@ -350,7 +310,6 @@ function buildQuantum(slot, keyName) {
       m.rotation.y = -Math.atan2(dz, dx);
       g.add(m);
     }
-
     let zx = -0.46;
     for (let i = 0; i < 4; i++) {
       track(zx, -0.46, zx, 0.46);
@@ -360,7 +319,6 @@ function buildQuantum(slot, keyName) {
       }
       zx += 0.3;
     }
-
     [[-.42,-.42],[.42,-.42],[-.42,.42],[.42,.42]].forEach(([x, z]) => {
       const pad = new THREE.Mesh(
         new THREE.CylinderGeometry(0.09, 0.09, 0.03, 24),
@@ -375,16 +333,13 @@ function buildQuantum(slot, keyName) {
       pad.position.set(x, 0.055, z);
       g.add(pad);
     });
-
     const hit = new THREE.Mesh(
       new THREE.BoxGeometry(1.4, 0.75, 1.4),
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 0.78, 0), g);
-
     tickers.push((t) => {
       g.children.forEach((c, i) => {
         if (c.material && c.material.emissive) {
@@ -397,11 +352,9 @@ function buildQuantum(slot, keyName) {
 
 function buildBiomed(slot, keyName) {
   makePedestal(slot.x, slot.z);
-
   if (keyName === "bcd180") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.62, slot.z);
-
     const drugMat = new THREE.MeshStandardMaterial({
       color: 0x8df3b2,
       roughness: 0.4,
@@ -410,7 +363,6 @@ function buildBiomed(slot, keyName) {
       metalness: 0.04
     });
     const drugGeo = new THREE.SphereGeometry(0.1, 14, 10);
-
     function arm(angle) {
       const a = new THREE.Group();
       for (let i = 0; i < 6; i++) {
@@ -423,7 +375,6 @@ function buildBiomed(slot, keyName) {
       a.rotation.z = angle;
       return a;
     }
-
     g.add(arm(0.52));
     g.add(arm(-0.52));
     for (let i = 0; i < 5; i++) {
@@ -432,33 +383,23 @@ function buildBiomed(slot, keyName) {
       sp.castShadow = true;
       g.add(sp);
     }
-
     const hit = new THREE.Mesh(
       new THREE.SphereGeometry(1.2, 16, 16),
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 1.08, 0), g);
-
     tickers.push((t) => {
       g.rotation.y = t * 0.45;
     });
   }
-
   if (keyName === "elvis") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.58, slot.z);
-
     const brain = new THREE.Mesh(
       new THREE.IcosahedronGeometry(0.58, 1),
-      new THREE.MeshStandardMaterial({
-        color: 0xf5bfd9,
-        roughness: 0.68,
-        flatShading: true,
-        metalness: 0.02
-      })
+      new THREE.MeshStandardMaterial({ color: 0xf5bfd9, roughness: 0.68, flatShading: true, metalness: 0.02 })
     );
     brain.castShadow = true;
     g.add(brain);
@@ -477,7 +418,6 @@ function buildBiomed(slot, keyName) {
       emissive: 0x4ade80,
       emissiveIntensity: 0.85
     });
-
     for (let i = 0; i < 9; i++) {
       const e = new THREE.Mesh(elGeo, elMat);
       const ix = (i % 3) - 1;
@@ -490,13 +430,7 @@ function buildBiomed(slot, keyName) {
     for (let i = 0; i < 4; i++) {
       const p = new THREE.Mesh(
         new THREE.RingGeometry(0.05, 0.065, 18),
-        new THREE.MeshBasicMaterial({
-          color: 0x4ade80,
-          transparent: true,
-          opacity: 0.8,
-          side: THREE.DoubleSide,
-          depthWrite: false
-        })
+        new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false })
       );
       p.rotation.x = -Math.PI / 2;
       p.position.set(0, 0.52, 0.22);
@@ -511,10 +445,8 @@ function buildBiomed(slot, keyName) {
     );
     hit.position.y = 0.12;
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 1.0, 0), g);
-
     tickers.push((t) => {
       g.rotation.y = -t * 0.22;
       pulses.forEach((p) => {
@@ -524,11 +456,9 @@ function buildBiomed(slot, keyName) {
       });
     });
   }
-
   if (keyName === "mrna") {
     const g = new THREE.Group();
     g.position.set(slot.x, 1.6, slot.z);
-
     const lnp = new THREE.Mesh(
       new THREE.SphereGeometry(0.55, 32, 24),
       new THREE.MeshPhysicalMaterial({
@@ -551,31 +481,19 @@ function buildBiomed(slot, keyName) {
       const r = 0.28;
       helixPts.push(new THREE.Vector3(Math.cos(a) * r, (i - 17) * 0.018, Math.sin(a) * r));
     }
-
     const tube = new THREE.Mesh(
       new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helixPts), 52, 0.022, 8, false),
-      new THREE.MeshStandardMaterial({
-        color: 0x16a34a,
-        emissive: 0x16a34a,
-        emissiveIntensity: 0.35,
-        roughness: 0.4
-      })
+      new THREE.MeshStandardMaterial({ color: 0x16a34a, emissive: 0x16a34a, emissiveIntensity: 0.35, roughness: 0.4 })
     );
     helix.add(tube);
-
     for (let i = 0; i < helixPts.length; i += 2) {
       const sp = new THREE.Mesh(
         new THREE.SphereGeometry(0.04, 10, 8),
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          emissive: 0x86efac,
-          emissiveIntensity: 0.65
-        })
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x86efac, emissiveIntensity: 0.65 })
       );
       sp.position.copy(helixPts[i]);
       helix.add(sp);
     }
-
     g.add(helix);
 
     const hit = new THREE.Mesh(
@@ -583,10 +501,8 @@ function buildBiomed(slot, keyName) {
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 0.98, 0), g);
-
     tickers.push((t) => {
       helix.rotation.y = t * 0.8;
       g.rotation.y = Math.sin(t * 0.3) * 0.35;
@@ -606,7 +522,6 @@ function buildPhysics(slot, keyName) {
 
     const g = new THREE.Group();
     g.position.set(slot.x, 0.55, slot.z);
-
     const torus = new THREE.Mesh(
       new THREE.TorusGeometry(1.75, 0.06, 14, 72),
       new THREE.MeshStandardMaterial({ color: 0xf9f9f8, roughness: 0.35, metalness: 0.4 })
@@ -622,7 +537,6 @@ function buildPhysics(slot, keyName) {
       magnets
     );
     magnetMesh.castShadow = true;
-
     const dummy = new THREE.Object3D();
     for (let i = 0; i < magnets; i++) {
       const a = (i / magnets) * Math.PI * 2;
@@ -653,12 +567,7 @@ function buildPhysics(slot, keyName) {
       const a = (i / 7) * Math.PI * 2;
       const beam = new THREE.Mesh(
         new THREE.BoxGeometry(0.035, 0.016, 1.35),
-        new THREE.MeshBasicMaterial({
-          color: 0xfca5a5,
-          transparent: true,
-          opacity: 0.52,
-          depthWrite: false
-        })
+        new THREE.MeshBasicMaterial({ color: 0xfca5a5, transparent: true, opacity: 0.52, depthWrite: false })
       );
       beam.position.set(Math.cos(a) * 0.9, 1.15, Math.sin(a) * 0.9);
       beam.lookAt(Math.cos(a) * 3, 1.15, Math.sin(a) * 3);
@@ -671,10 +580,8 @@ function buildPhysics(slot, keyName) {
     );
     hit.position.y = 0.62;
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 1.55, 0), g);
-
     tickers.push((t) => {
       for (let i = 0; i < beamCount; i++) {
         const a = (i / beamCount + t * 0.24) * Math.PI * 2;
@@ -687,13 +594,10 @@ function buildPhysics(slot, keyName) {
       g.rotation.y = t * 0.045;
     });
   }
-
   if (keyName === "tokamak") {
     makePedestal(slot.x, slot.z, 0.86);
-
     const g = new THREE.Group();
     g.position.set(slot.x, 1.6, slot.z);
-
     const chamber = new THREE.Mesh(
       new THREE.TorusGeometry(0.62, 0.22, 16, 42),
       new THREE.MeshStandardMaterial({ color: 0xd4d4d4, roughness: 0.38, metalness: 0.74 })
@@ -704,19 +608,13 @@ function buildPhysics(slot, keyName) {
 
     const plasma = new THREE.Mesh(
       new THREE.TorusGeometry(0.62, 0.09, 12, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0xff8a4c,
-        transparent: true,
-        opacity: 0.82,
-        depthWrite: false
-      })
+      new THREE.MeshBasicMaterial({ color: 0xff8a4c, transparent: true, opacity: 0.82, depthWrite: false })
     );
     plasma.rotation.x = Math.PI / 2;
     g.add(plasma);
 
     const coilGeo = new THREE.TorusGeometry(0.22, 0.025, 8, 24);
     const coilMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.4, metalness: 0.62 });
-
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
       const coil = new THREE.Mesh(coilGeo, coilMat);
@@ -736,10 +634,8 @@ function buildPhysics(slot, keyName) {
       new THREE.MeshBasicMaterial({ visible: false })
     );
     g.add(hit);
-
     roomRoot.add(g);
     registerInteractive(hit, keyName, EXHIBITS[keyName].tag, new THREE.Vector3(0, 1.0, 0), g);
-
     tickers.push((t) => {
       g.rotation.y = t * 0.34;
       plasma.material.opacity = 0.7 + Math.sin(t * 3.2) * 0.14;
@@ -766,17 +662,12 @@ function buildPins(room) {
 
 function buildRoom(roomId) {
   clearRoom();
-
   const room = ROOMS[roomId];
   currentRoom = roomId;
-
   buildRoomBase(room);
-
   const slots = getSlots(room.exhibits.length);
   room.exhibits.forEach((keyName, i) => buildExhibit(keyName, slots[i], roomId));
-
   buildPins(room);
-
   document.querySelectorAll(".zones button").forEach((b) => {
     b.classList.toggle("active", b.dataset.jump === roomId);
   });
@@ -800,10 +691,8 @@ renderer.domElement.addEventListener("pointermove", (e) => {
   const r = renderer.domElement.getBoundingClientRect();
   pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
   pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
-
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(interactive, true);
-
   if (hits.length) {
     const m = hits[0].object;
     hovered = m;
@@ -829,7 +718,6 @@ renderer.domElement.addEventListener("click", () => {
 PANEL
 ==================================================== */
 const panel = document.getElementById("panel");
-
 panel.querySelector(".close").addEventListener("click", () => {
   panel.classList.add("hidden");
   currentKey = null;
@@ -853,9 +741,7 @@ function stepExhibit(dir) {
 function openPanel(keyName, focus = false) {
   const e = EXHIBITS[keyName];
   if (!e) return;
-
   currentKey = keyName;
-
   document.getElementById("p-tag").textContent = e.tag;
   document.getElementById("p-title").textContent = e.title;
   document.getElementById("p-lede").textContent = e.lede;
@@ -864,32 +750,22 @@ function openPanel(keyName, focus = false) {
   document.getElementById("p-year").textContent = e.year;
   document.getElementById("p-metric").textContent = e.metric;
   document.getElementById("p-breakthrough").textContent = e.breakthrough;
-
-  document.getElementById("p-specs").innerHTML =
-    e.specs.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("");
-
-  document.getElementById("p-links").innerHTML =
-    e.links.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a></li>`).join("");
-
+  document.getElementById("p-specs").innerHTML = e.specs.map(([k, v]) => `<li><span>${k}</span><b>${v}</b></li>`).join("");
+  document.getElementById("p-links").innerHTML = e.links.map(([t, u]) => `<li><a href="${u}" target="_blank">${t}</a></li>`).join("");
   const roomKeys = ROOMS[currentRoom].exhibits;
   const idx = roomKeys.indexOf(keyName) + 1;
   document.getElementById("pager-info").textContent = `${idx} / ${roomKeys.length}`;
-
   panel.classList.remove("hidden");
   panel.scrollTo({ top: 0, behavior: "smooth" });
-
   pins.forEach((p) => p.el.classList.toggle("dim", p.key !== keyName));
-
   if (focus) focusOnExhibit(keyName);
 }
 
 function focusOnExhibit(keyName) {
   const w = exhibitWorldPos[keyName];
   if (!w) return;
-
   const camPos = new THREE.Vector3(w.x * 0.12, w.y + 1.2, 3.8);
   const tgt = new THREE.Vector3(w.x * 0.06, w.y + 0.06, w.z);
-
   flyTo(camPos, tgt);
 }
 
@@ -898,22 +774,18 @@ ROOM SWITCH
 ==================================================== */
 function switchRoom(roomId) {
   if (!ROOMS[roomId]) return;
-
   stage.classList.add("room-switching");
   hoverLabel.classList.remove("on");
   panel.classList.add("hidden");
   currentKey = null;
-
   const startPos = cameraRig.currentPos.clone();
   const startTarget = cameraRig.currentTarget.clone();
-
   setTimeout(() => {
     buildRoom(roomId);
-
     cameraRig.currentPos.copy(startPos);
     cameraRig.currentTarget.copy(startTarget);
-
-    const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
+    const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME };
+    flyTo(cr.pos.clone(), cr.target.clone());
     stage.classList.remove("room-switching");
   }, 180);
 }
@@ -923,7 +795,8 @@ document.querySelectorAll(".zones button").forEach((btn) => {
 });
 
 document.getElementById("reset-cam").addEventListener("click", () => {
-  const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME }; flyTo(cr.pos.clone(), cr.target.clone());
+  const cr = CAM_ROOMS[currentRoom] || { pos: CAMERA_HOME, target: TARGET_HOME };
+  flyTo(cr.pos.clone(), cr.target.clone());
   panel.classList.add("hidden");
   currentKey = null;
   pins.forEach((p) => p.el.classList.remove("dim"));
@@ -934,7 +807,6 @@ KEYBOARD
 ==================================================== */
 window.addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-
   if (e.key === "Tab") {
     e.preventDefault();
     stepExhibit(e.shiftKey ? -1 : 1);
@@ -1001,7 +873,6 @@ let frames = 0;
 function loop() {
   const now = performance.now();
   const t = now / 1000;
-
   frames++;
   if (now - lastFpsTime >= 500) {
     fpsEl.textContent = `${Math.round((frames * 1000) / (now - lastFpsTime))} fps`;
@@ -1011,13 +882,11 @@ function loop() {
 
   cameraRig.currentPos.lerp(cameraRig.desiredPos, 0.08);
   cameraRig.currentTarget.lerp(cameraRig.desiredTarget, 0.08);
-
   camera.position.copy(cameraRig.currentPos);
   camera.lookAt(cameraRig.currentTarget);
 
   tickers.forEach((fn) => fn(t));
   updateOverlays();
-
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
