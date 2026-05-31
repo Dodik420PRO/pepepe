@@ -3,6 +3,414 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { EXHIBITS } from "./data.js";
 
+/* ============================================================
+   RENDERER + SCENE
+============================================================ */
+
+const stage = document.getElementById("stage");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf4f3ef);
+scene.fog = new THREE.Fog(0xf4f3ef, 36, 90);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+
+// Позиции камер для каждой комнаты
+const CAM_ROOMS = {
+  quantum:  { pos: new THREE.Vector3(0, 2.0, 7.0), target: new THREE.Vector3(0, 1.5, 0) },
+  biomed:   { pos: new THREE.Vector3(0, 2.4, 6.0), target: new THREE.Vector3(0, 1.5, 0) },
+  physics:  { pos: new THREE.Vector3(0, 2.4, 6.0), target: new THREE.Vector3(0, 1.5, 0) }
+};
+const CAM_HOME = new THREE.Vector3(14, 7, 22);
+const TARGET_HOME = new THREE.Vector3(0, 1.8, 0);
+camera.position.copy(CAM_HOME);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 6;
+controls.maxDistance = 60;
+controls.minPolarAngle = Math.PI * 0.12;
+controls.maxPolarAngle = Math.PI * 0.46;
+controls.target.copy(TARGET_HOME);
+
+/* PBR environment for nicer reflections */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+/* ============================================================
+   LIGHTING
+============================================================ */
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xe2dfd6, 0.55);
+scene.add(hemi);
+
+const key = new THREE.DirectionalLight(0xffffff, 1.0);
+key.position.set(12, 22, 10);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+const s = 22;
+key.shadow.camera.left = -s; key.shadow.camera.right = s;
+key.shadow.camera.top = s; key.shadow.camera.bottom = -s;
+key.shadow.radius = 6;
+key.shadow.camera.near = 8;
+key.shadow.camera.far = 60;
+scene.add(key);
+
+const fill = new THREE.DirectionalLight(0xffc080, 0.35);
+fill.position.set(-16, 6, -10);
+scene.add(fill);
+
+/* ============================================================
+   ROOMS - Три отдельные комнаты
+============================================================ */
+
+function buildRoom(zoneId, offsetX) {
+  const group = new THREE.Group();
+  group.position.x = offsetX;
+
+  // Пол
+  const floorGeo = new THREE.PlaneGeometry(12, 12);
+  const floorMat = new THREE.MeshStandardMaterial({ 
+    color: zoneId === 'quantum' ? 0xd0e8f2 : 
+           zoneId === 'biomed' ? 0xd2f5d2 : 0xf5d2d2,
+    roughness: 0.8,
+    metalness: 0.1
+  });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  // Стены
+  const wallH = 6;
+  const wallMat = new THREE.MeshStandardMaterial({ 
+    color: 0xeeeeee, 
+    side: THREE.DoubleSide,
+    roughness: 0.9
+  });
+
+  const wallBack = new THREE.Mesh(new THREE.PlaneGeometry(12, wallH), wallMat);
+  wallBack.position.set(0, wallH/2, -6);
+  wallBack.receiveShadow = true;
+  group.add(wallBack);
+
+  const wallLeft = new THREE.Mesh(new THREE.PlaneGeometry(12, wallH), wallMat);
+  wallLeft.position.set(-6, wallH/2, 0);
+  wallLeft.rotation.y = Math.PI / 2;
+  wallLeft.receiveShadow = true;
+  group.add(wallLeft);
+
+  const wallRight = new THREE.Mesh(new THREE.PlaneGeometry(12, wallH), wallMat);
+  wallRight.position.set(6, wallH/2, 0);
+  wallRight.rotation.y = -Math.PI / 2;
+  wallRight.receiveShadow = true;
+  group.add(wallRight);
+
+  return group;
+}
+
+const quantumRoom = buildRoom('quantum', -20);
+scene.add(quantumRoom);
+
+const biomedRoom = buildRoom('biomed', 0);
+scene.add(biomedRoom);
+
+const physicsRoom = buildRoom('physics', 20);
+scene.add(physicsRoom);
+
+/* ============================================================
+   EXHIBITS
+============================================================ */
+
+const tickers = [];
+let currentExhibit = null;
+
+function makeExhibit(data, parentGroup) {
+  const holder = new THREE.Group();
+  
+  // Постамент
+  const pedGeo = new THREE.CylinderGeometry(0.6, 0.7, 1.2, 16);
+  const pedMat = new THREE.MeshStandardMaterial({ 
+    color: 0xdddddd,
+    roughness: 0.5,
+    metalness: 0.1
+  });
+  const pedestal = new THREE.Mesh(pedGeo, pedMat);
+  pedestal.position.y = 0.6;
+  pedestal.castShadow = true;
+  pedestal.receiveShadow = true;
+  holder.add(pedestal);
+
+  // Модель (куб с цветом зоны)
+  const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+  const color = data.zone === 'quantum' ? 0x4a9eff :
+                data.zone === 'biomed' ? 0x66cc66 : 0xff6666;
+  const boxMat = new THREE.MeshStandardMaterial({ 
+    color,
+    roughness: 0.3,
+    metalness: 0.6
+  });
+  const box = new THREE.Mesh(boxGeo, boxMat);
+  box.position.y = 1.8;
+  box.castShadow = true;
+  holder.add(box);
+
+  // Анимация вращения
+  tickers.push(() => {
+    box.rotation.y += 0.01;
+  });
+
+  holder.userData = { exhibitData: data };
+  holder.name = data.tag;
+  parentGroup.add(holder);
+  return holder;
+}
+
+// Размещаем экспонаты по комнатам
+let quantumExhibits = EXHIBITS.filter(ex => ex.zone === 'quantum');
+let biomedExhibits = EXHIBITS.filter(ex => ex.zone === 'biomed');
+let physicsExhibits = EXHIBITS.filter(ex => ex.zone === 'physics');
+
+function placeExhibitsInRoom(exhList, parentGroup, positions) {
+  exhList.forEach((ex, i) => {
+    const obj = makeExhibit(ex, parentGroup);
+    if (positions[i]) obj.position.set(positions[i].x, 0, positions[i].z);
+  });
+}
+
+placeExhibitsInRoom(quantumExhibits, quantumRoom, [
+  {x: -3, z: -2}, {x: 0, z: -3}, {x: 3, z: -2}
+]);
+
+placeExhibitsInRoom(biomedExhibits, biomedRoom, [
+  {x: -3, z: 0}, {x: 0, z: -2}, {x: 3, z: 0}
+]);
+
+placeExhibitsInRoom(physicsExhibits, physicsRoom, [
+  {x: -2, z: -2}, {x: 2, z: -2}
+]);
+
+/* ============================================================
+   INTERACTION - клик по экспонату
+============================================================ */
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onCanvasClick(ev) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  
+  if (hits.length) {
+    let obj = hits[0].object;
+    while(obj.parent && !obj.userData.exhibitData) obj = obj.parent;
+    if (obj.userData.exhibitData) {
+      selectExhibit(obj);
+    }
+  }
+}
+renderer.domElement.addEventListener('click', onCanvasClick);
+
+function selectExhibit(obj) {
+  currentExhibit = obj;
+  const data = obj.userData.exhibitData;
+  showPanel(data);
+  setCameraImmediate(CAM_ROOMS[data.zone].pos, CAM_ROOMS[data.zone].target);
+}
+
+function setCameraImmediate(camPos, targetPos) {
+  camera.position.lerp(camPos, 0.08);
+  controls.target.lerp(targetPos, 0.08);
+}
+
+/* ============================================================
+   UI PANEL
+============================================================ */
+
+const panel = document.getElementById('panel');
+const pTag = document.getElementById('p-tag');
+const pTitle = document.getElementById('p-title');
+const pLede = document.getElementById('p-lede');
+const pOrg = document.getElementById('p-org');
+const pStatus = document.getElementById('p-status');
+const pYear = document.getElementById('p-year');
+const pMetric = document.getElementById('p-metric');
+const pBreakthrough = document.getElementById('p-breakthrough');
+const pSpecs = document.getElementById('p-specs');
+const pLinks = document.getElementById('p-links');
+const pagerInfo = document.getElementById('pager-info');
+const closeBtn = document.getElementById('panel').querySelector('button');
+const prevBtn = document.getElementById('prev-exh');
+const nextBtn = document.getElementById('next-exh');
+
+function showPanel(data) {
+  panel.style.display = 'block';
+  pTag.textContent = data.tag;
+  pTitle.textContent = data.title;
+  pLede.textContent = data.lede;
+  pOrg.textContent = data.org;
+  pStatus.textContent = data.status;
+  pYear.textContent = data.year;
+  pMetric.textContent = data.metric;
+  pBreakthrough.textContent = data.breakthrough;
+  
+  pSpecs.innerHTML = '';
+  data.specs.forEach(sp => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${sp[0]}</strong> ${sp[1]}`;
+    pSpecs.appendChild(li);
+  });
+  
+  pLinks.innerHTML = '';
+  data.links.forEach(lk => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${lk[1]}" target="_blank">${lk[0]}</a>`;
+    pLinks.appendChild(li);
+  });
+  
+  updatePagerInfo();
+}
+
+function hidePanel() {
+  panel.style.display = 'none';
+  currentExhibit = null;
+  setCameraImmediate(CAM_HOME, TARGET_HOME);
+}
+
+closeBtn.addEventListener('click', hidePanel);
+
+function updatePagerInfo() {
+  if (!currentExhibit) return;
+  const zone = currentExhibit.userData.exhibitData.zone;
+  let arr = EXHIBITS.filter(e => e.zone === zone);
+  let idx = arr.findIndex(e => e.tag === currentExhibit.userData.exhibitData.tag);
+  pagerInfo.textContent = `${idx+1} / ${arr.length}`;
+}
+
+prevBtn.addEventListener('click', () => {
+  if (!currentExhibit) return;
+  const zone = currentExhibit.userData.exhibitData.zone;
+  let arr = EXHIBITS.filter(e => e.zone === zone);
+  let idx = arr.findIndex(e => e.tag === currentExhibit.userData.exhibitData.tag);
+  idx = (idx - 1 + arr.length) % arr.length;
+  const nextData = arr[idx];
+  const nextObj = scene.getObjectByName(nextData.tag);
+  if (nextObj) selectExhibit(nextObj);
+});
+
+nextBtn.addEventListener('click', () => {
+  if (!currentExhibit) return;
+  const zone = currentExhibit.userData.exhibitData.zone;
+  let arr = EXHIBITS.filter(e => e.zone === zone);
+  let idx = arr.findIndex(e => e.tag === currentExhibit.userData.exhibitData.tag);
+  idx = (idx + 1) % arr.length;
+  const nextData = arr[idx];
+  const nextObj = scene.getObjectByName(nextData.tag);
+  if (nextObj) selectExhibit(nextObj);
+});
+
+/* ============================================================
+   SECTION BUTTONS
+============================================================ */
+
+const btn1 = document.querySelectorAll('button')[0]; // Квантовые технологии
+const btn2 = document.querySelectorAll('button')[1]; // Биомедицина
+const btn3 = document.querySelectorAll('button')[2]; // Большая физика
+
+btn1.addEventListener('click', () => {
+  setCameraImmediate(new THREE.Vector3(-20, 5, 10), new THREE.Vector3(-20, 1.5, 0));
+});
+
+btn2.addEventListener('click', () => {
+  setCameraImmediate(new THREE.Vector3(0, 5, 10), new THREE.Vector3(0, 1.5, 0));
+});
+
+btn3.addEventListener('click', () => {
+  setCameraImmediate(new THREE.Vector3(20, 5, 10), new THREE.Vector3(20, 1.5, 0));
+});
+
+/* ============================================================
+   OVERLAYS - мини-карта
+============================================================ */
+
+function updateOverlays() {
+  const roomBtns = document.querySelectorAll('#minimap > div');
+  // можно подсветить активную комнату
+}
+
+/* mini-map camera projection: floor X/Z → svg X/Y */
+const mmCam = document.getElementById("mm-cam");
+const mmRing = document.getElementById("mm-cam-ring");
+function updateMinimap() {
+  const wx = camera.position.x, wz = camera.position.z;
+  const tx = controls.target.x, tz = controls.target.z;
+  const mapX = (v) => 110 + (v / 14) * 70;
+  const mapY = (v) => 45 + (v / 6) * 25;
+  const cx = mapX(wx), cy = mapY(wz);
+  mmCam.setAttribute("cx", mapX(tx));
+  mmCam.setAttribute("cy", mapY(tz));
+  mmRing.setAttribute("cx", mapX(wx));
+  mmRing.setAttribute("cy", mapY(wz));
+}
+
+/* ============================================================
+   RESIZE
+============================================================ */
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ============================================================
+   BOOT
+============================================================ */
+
+const fpsEl = document.getElementById("fps");
+let lastT = performance.now(), frames = 0;
+
+function loop() {
+  const now = performance.now();
+  const t = now / 1000;
+
+  frames++;
+  if (now - lastT >= 500) {
+    fpsEl.textContent = `${Math.round((frames * 1000) / (now - lastT))} fps`;
+    frames = 0;
+    lastT = now;
+  }
+
+  controls.update();
+  tickers.forEach((fn) => fn(t));
+  updateOverlays();
+  updateMinimap();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+loop();
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EXHIBITS } from "./data.js";
+
 /* ====================================================
    RENDERER + SCENE
 ==================================================== */
