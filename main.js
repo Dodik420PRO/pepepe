@@ -26,7 +26,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 
 const CAM_Y=8, CAM_Z=26, CAM_LOOK_Y=0, CAM_X_MIN=-14, CAM_X_MAX=14;
-let camX=0, camXTarget=0, camZ=26, camZTarget=26, isDragging=false, dragStartX=0, dragCamStartX=0;
+let camX=0, camXTarget=0, isDragging=false, dragStartX=0, dragCamStartX=0;
 renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0)return;isDragging=true;dragStartX=e.clientX;dragCamStartX=camX;renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!isDragging)return;const dx=(e.clientX-dragStartX)/stage.clientWidth;camXTarget=Math.max(CAM_X_MIN,Math.min(CAM_X_MAX,dragCamStartX-dx*28));});
 renderer.domElement.addEventListener('pointerup',()=>{isDragging=false;});
@@ -635,9 +635,6 @@ function openPanel(key, focus = false) {
 function flyToZone(zoneKey) {
   const z = ZONES[zoneKey];
   camXTarget = z.x;
-  // плавный "swing": сначала слегка отдаляем, потом возвращаем
-  camZTarget = CAM_Z + 6;
-  setTimeout(() => { camZTarget = CAM_Z; }, 500);
 }
   function focusOnExhibit(key) {
 const w = exhibitWorldPos[key];
@@ -756,7 +753,7 @@ function loop() {
     frames = 0; lastT = now;
   }
   controls.update();
-   camX += (camXTarget - camX) * 0.08; camZ += (camZTarget - camZ) * 0.06; camera.position.set(camX, CAM_Y, camZ); camera.lookAt(camX * 0.3, CAM_LOOK_Y, 4);
+     camX += (camXTarget - camX) * 0.08; camera.position.set(camX, CAM_Y, CAM_Z); camera.lookAt(camX * 0.3, CAM_LOOK_Y, 4);
   tickers.forEach((fn) => fn(t));
   updateOverlays();
   updateMinimap();
